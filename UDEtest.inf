@@ -1,0 +1,77 @@
+;
+; UDEtest.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=UDEtest.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+UDEtest_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+UDEtest.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%UDEtest.DeviceDesc%=UDEtest_Device, Root\UDEtest ; TODO: edit hw-id
+
+[UDEtest_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+UDEtest.sys
+
+;-------------- Service installation
+[UDEtest_Device.NT.Services]
+AddService = UDEtest,%SPSVCINST_ASSOCSERVICE%, UDEtest_Service_Inst
+
+; -------------- UDEtest driver install sections
+[UDEtest_Service_Inst]
+DisplayName    = %UDEtest.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\UDEtest.sys
+
+;
+;--- UDEtest_Device Coinstaller installation ------
+;
+
+[UDEtest_Device.NT.CoInstallers]
+AddReg=UDEtest_Device_CoInstaller_AddReg
+CopyFiles=UDEtest_Device_CoInstaller_CopyFiles
+
+[UDEtest_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[UDEtest_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[UDEtest_Device.NT.Wdf]
+KmdfService =  UDEtest, UDEtest_wdfsect
+[UDEtest_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "UDEtest Installation Disk"
+UDEtest.DeviceDesc = "UDEtest Device"
+UDEtest.SVCDESC = "UDEtest Service"
